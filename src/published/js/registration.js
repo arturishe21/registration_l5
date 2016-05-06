@@ -4,6 +4,16 @@ var Registration =
 {
     init: function ()
     {
+        if ($('meta[name="csrf-token"]').attr('content')) {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+        } else {
+            alert("absent meta csrf-token");
+        }
+
         Registration.registration();
     },
 
@@ -70,6 +80,6 @@ var Registration =
         });
     }
 };
-window.onload =  function() {
-    Registration.init();
-}
+$(window).load(function() {
+     Registration.init();
+});

@@ -4,13 +4,22 @@ var Authorization =
 {
     init: function ()
     {
+        if ($('meta[name="csrf-token"]').attr('content')) {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+        } else {
+            alert("absent meta csrf-token");
+        }
         Authorization.login();
     },
 
     //enter site
     login: function()
     {
-        jQuery("[name=authorization_form]").validate({
+        $("[name=authorization_form]").validate({
             // Rules for form validation
             rules : {
                 email : {
@@ -51,13 +60,13 @@ var Authorization =
                             $(".login_form_error").html("<span style='color:green'>" + data.ok_messages + "</span>");
                             setTimeout("location.href = location.href", 3000);
                         }
-                    },"json");
+                    }, "json");
             }
 
         });
     }
 };
 
-$(window).ready(function(){
+$(window).load(function() {
     Authorization.init();
 });
