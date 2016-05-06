@@ -1,22 +1,16 @@
 <?php namespace Vis\Registration;
 
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
-use Cartalyst\Sentry\Facades\Laravel\Sentry;
-
+use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
+use Cartalyst\Sentinel\Laravel\Facades\Activation;
 
 class GoogleController extends Controller
 {
@@ -30,13 +24,13 @@ class GoogleController extends Controller
         $url = 'https://accounts.google.com/o/oauth2/auth';
 
         $params = array(
-            'redirect_uri'  => Config::get('registration::social.google.redirect_oauth2callback'),
+            'redirect_uri'  => Config::get('registration.social.google.redirect_oauth2callback'),
             'response_type' => 'code',
-            'client_id'     => Config::get('registration::social.google.api_id'),
+            'client_id'     => Config::get('registration.social.google.api_id'),
             'scope'         => 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
         );
 
-        header("Location: ".$url."?".urldecode(http_build_query($params)));
+        header("Location: " . $url . "?" . urldecode(http_build_query($params)));
     }
 
     //auth google
@@ -45,9 +39,9 @@ class GoogleController extends Controller
         if (Input::get("code")) {
 
             $params = array(
-                'client_id' => Config::get('registration::social.google.api_id'),
-                'client_secret' => Config::get('registration::social.google.secret_key'),
-                'redirect_uri' => Config::get('registration::social.google.redirect_oauth2callback'),
+                'client_id' => Config::get('registration.social.google.api_id'),
+                'client_secret' => Config::get('registration.social.google.secret_key'),
+                'redirect_uri' => Config::get('registration.social.google.redirect_oauth2callback'),
                 'grant_type' => 'authorization_code',
                 'code' => Input::get("code")
             );
@@ -70,29 +64,27 @@ class GoogleController extends Controller
 
                 $userInfo = json_decode(file_get_contents('https://www.googleapis.com/oauth2/v1/userinfo' . '?' . urldecode(http_build_query($params))), true);
 
-                if($userInfo["id"]){
+                if ($userInfo["id"]) {
                     $email = trim($userInfo['email']);
-                    $user = DB::table("users")->where("email","like" , $email)->first();
-
+                    $user = DB::table("users")->where("email", "like", $email)->first();
 
                     if (!$user['id']) {
 
-                        $new_pass = str_random(6);
+                        $randomPassword = str_random(8);
 
-                        $user =  Sentry::register(array(
+                        $user =  Sentinel::registerAndActivate(array(
                             'email'    => $email,
-                            'password' => $new_pass,
-                            'activated'=>"1",
+                            'password' => $randomPassword,
                             'first_name'=>$userInfo['given_name'],
                             'last_name'=>$userInfo['family_name']
                         ));
 
-                        $user_auth = Sentry::findUserById($user->id);
-                        Sentry::login($user_auth, Config::get('registration::social.google.remember'));
+                        $userAuth = Sentinel::findById($user->id);
+                        Sentinel::login($userAuth, Config::get('registration.social.google.remember'));
 
                     } else {
-                        $user_auth = Sentry::findUserById($user['id']);
-                        Sentry::login($user_auth, Config::get('registration::social.google.remember'));
+                        $userAuth = Sentinel::findById($user['id']);
+                        Sentinel::login($userAuth, Config::get('registration.social.google.remember'));
                     }
 
                     $redirect = Session::get('url_previous', "/");
@@ -101,7 +93,7 @@ class GoogleController extends Controller
                     //if not empty redirect_url
                     if (Config::get('registration::social.google.redirect_url')) {
                         $redirect = Config::get('registration::social.google.redirect_url');
-                        Session::flash('id_user', $user_auth->id);
+                        Session::flash('id_user', $userAuth->id);
                     } else {
                         $redirect = Session::get('url_previous', "/");
                         Session::forget('url_previous');

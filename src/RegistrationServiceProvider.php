@@ -19,6 +19,7 @@ class RegistrationServiceProvider extends ServiceProvider
 
         $this->setupRoutes($this->app->router);
         $this->loadViewsFrom(realpath(__DIR__ . '/resources/views'), 'registration');
+        $this->loadViewsFrom(base_path('resources/views/vis/registration'), 'registration');
 
         $this->publishes([
             __DIR__
@@ -30,6 +31,10 @@ class RegistrationServiceProvider extends ServiceProvider
             __DIR__
             . '/published' => public_path('packages/vis/registration')
         ], 'public');
+
+        $this->publishes([
+            __DIR__.'/resources/views' => resource_path('views/vendor/registration'),
+        ], 'registration_views');
         
     }
 

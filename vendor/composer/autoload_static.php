@@ -21,6 +21,8 @@ class ComposerStaticInita08ecb8b95081075de726ff92f5867c2
     );
 
     public static $classMap = array (
+        'Vis\\Registration\\FBController' => __DIR__ . '/../..' . '/src/Http/Controllers/FBController.php',
+        'Vis\\Registration\\GoogleController' => __DIR__ . '/../..' . '/src/Http/Controllers/GoogleController.php',
         'Vis\\Registration\\RegistrationController' => __DIR__ . '/../..' . '/src/Http/Controllers/RegistrationController.php',
         'Vis\\Registration\\VKController' => __DIR__ . '/../..' . '/src/Http/Controllers/VKController.php',
     );
