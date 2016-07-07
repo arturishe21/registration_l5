@@ -1,16 +1,15 @@
 <?php namespace Vis\Registration;
 
+use Cartalyst\Sentinel\Laravel\Facades\Activation;
+use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
-use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
-use Cartalyst\Sentinel\Laravel\Facades\Activation;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
-
 use Vis\MailTemplates\MailT;
 
 class RegistrationController extends Controller
@@ -18,71 +17,77 @@ class RegistrationController extends Controller
     /**
      * @var array rules registration
      */
-    public $reg_rules = array(
-        'email'     => 'required|email|unique:users',
-        'password'  => 'required|min:5'
-    );
+    public $reg_rules
+        = array (
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:5'
+        );
 
     /**
      * @var array rules authorization
      */
-    public $auth_rules = array(
-        'email'     => 'required|email',
-        'password'  => 'required|min:5'
-    );
+    public $auth_rules
+        = array (
+            'email' => 'required|email',
+            'password' => 'required|min:5'
+        );
 
     /**
      * @var array rules forgot password
      */
-    public $forgot_rules = array(
-        'email'     => 'required'
-    );
+    public $forgot_rules
+        = array (
+            'email' => 'required'
+        );
 
-    public $messages = array(
-        'first_name.required'  => 'Поле имя должно быть заполнено',
-        'password.min'      => 'Поле пароль должно быть минимум 5 знаков',
-        'password.required' => 'Поле пароль должно быть заполнено',
-        'email.unique'      => 'Пользователь с данным Email уже существует',
-        'email.email'       => 'Не правильный формат email',
-        'email.required'    => 'Поле email должно быть заполнено'
-    );
+    public $messages
+        = array (
+            'first_name.required' => 'Поле имя должно быть заполнено',
+            'password.min' => 'Поле пароль должно быть минимум 5 знаков',
+            'password.required' => 'Поле пароль должно быть заполнено',
+            'email.unique' => 'Пользователь с данным Email уже существует',
+            'email.email' => 'Не правильный формат email',
+            'email.required' => 'Поле email должно быть заполнено'
+        );
 
     /*
      * Authorization
      */
-    public function doLogin()
+    public function doLogin ()
     {
-        parse_str(Input::get('filds'), $filds);
+        parse_str (Input::get ('filds'), $filds);
 
-        $validator = Validator::make($filds, $this->auth_rules);
-        if ($validator->fails()) {
+        $validator = Validator::make ($filds, $this->auth_rules);
+        if ($validator->fails ()) {
 
-            return Response::json(
-                array(
+            return Response::json (
+                array (
                     'status' => 'error',
-                    "errors_messages" => implode("<br>", $validator->messages()->all())
+                    "errors_messages" => implode ("<br>",
+                        $validator->messages ()->all ())
                 )
             );
         }
 
         try {
-            $user = Sentinel::authenticate(
-                array(
+            $user = Sentinel::authenticate (
+                array (
                     'email' => $filds['email'],
                     'password' => $filds['password'],
                 )
             );
 
             if ($user) {
-                return Response::json(
-                    array(
-                        'status' => 'ok', "ok_messages" => "Вы успешно авторизованы"
+                return Response::json (
+                    array (
+                        'status' => 'ok',
+                        "ok_messages" => "Вы успешно авторизованы"
                     )
                 );
 
             } else {
-                return Response::json(
-                    array(
+                return Response::json (
+                    array (
                         'status' => 'error',
                         "errors_messages" => "Пользователь не найден"
                     )
@@ -91,8 +96,8 @@ class RegistrationController extends Controller
 
         } catch (\Cartalyst\Sentinel\Checkpoints\NotActivatedException $e) {
 
-            return Response::json(
-                array(
+            return Response::json (
+                array (
                     'status' => 'error',
                     "errors_messages" => "Пользователь не активирован"
                 )
@@ -105,59 +110,78 @@ class RegistrationController extends Controller
      *
      * @return mixed
      */
-    public function doRegistration()
+    public function doRegistration ()
     {
-        parse_str(Input::get('filds'), $filds);
+        parse_str (Input::get ('filds'), $filds);
 
         //check password
         if ($filds['password'] != $filds['re_password']) {
-            return Response::json(
-                array(
+            return Response::json (
+                array (
                     'status' => 'error',
                     "errors_messages" => "Ошибка. Пароли не совпадают"
                 )
             );
         }
 
-        $validator = Validator::make($filds, $this->reg_rules, $this->messages);
+        $validator = Validator::make ($filds, $this->reg_rules,
+            $this->messages);
 
-        if ($validator->fails()) {
-            return Response::json(
-                array(
+        if ($validator->fails ()) {
+            return Response::json (
+                array (
                     'status' => 'error',
-                    "errors_messages" => implode("<br>", $validator->messages()->all())
+                    "errors_messages" => implode ("<br>",
+                        $validator->messages ()->all ())
                 )
             );
         }
         try {
-            $user = Sentinel::register(
-                array(
-                    'email' => $filds['email'],
-                    'password' => $filds['password'],
-                    'first_name' => $filds['name']
-                )
+
+            $fields = [
+                'email' => $filds['email'],
+                'password' => $filds['password'],
+            ];
+
+            if (is_array (Config::get ('registration.registration.field_for_registration'))) {
+
+                foreach (
+                    Config::get ('registration.registration.field_for_registration')
+                    as $fieldBd => $fieldUser
+                ) {
+                    if (isset($filds[$fieldUser])) {
+                        $fields[$fieldBd] = $filds[$fieldUser];
+                    }
+                }
+            }
+            
+            $user = Sentinel::register (
+                $fields
             );
 
-            $activation = Activation::create($user);
+            $activation = Activation::create ($user);
 
-            $mail = new MailT(Config::get('registration.registration.template_mail'), [
-                "login" => $filds['email'],
-                "password" => $filds['password'],
-                "activation_url" => route('activating_user', ["id" => $user->id, "token" => $activation->getCode()])
-            ]);
+            $mail
+                = new MailT(Config::get ('registration.registration.template_mail'),
+                [
+                    "login" => $filds['email'],
+                    "password" => $filds['password'],
+                    "activation_url" => route ('activating_user',
+                        ["id" => $user->id, "token" => $activation->getCode ()])
+                ]);
             $mail->to = $filds['email'];
-            $mail->send();
+            $mail->send ();
 
-            return Response::json(
-                array(
+            return Response::json (
+                array (
                     "status" => "ok",
                     "ok_messages" => "Вы успешно зарегистрированы. На почту выслана ссылка для активации",
                 )
             );
 
         } catch (\Cartalyst\Sentinel\Users\UserExistsException $e) {
-            return Response::json(
-                array(
+            return Response::json (
+                array (
                     'status' => 'error',
                     "errors_messages" => $this->messages['email.unique'],
                 )
@@ -170,11 +194,11 @@ class RegistrationController extends Controller
     /*
      * logout
      */
-    public function doLogout()
+    public function doLogout ()
     {
-        Sentinel::logout();
+        Sentinel::logout ();
 
-        return Redirect::back();
+        return Redirect::back ();
     } //end doLogout
 
     /**
@@ -182,25 +206,27 @@ class RegistrationController extends Controller
      *
      * @return mixed
      */
-    public function doForgotPass()
+    public function doForgotPass ()
     {
-        parse_str(Input::get('filds'), $filds);
+        parse_str (Input::get ('filds'), $filds);
 
-        $validator = Validator::make($filds, $this->forgot_rules, $this->messages);
-        if ($validator->fails()) {
-            return Response::json(
-                array(
+        $validator = Validator::make ($filds, $this->forgot_rules,
+            $this->messages);
+        if ($validator->fails ()) {
+            return Response::json (
+                array (
                     'status' => 'error',
-                    "errors_messages" => implode("<br>", $validator->messages()->all())
+                    "errors_messages" => implode ("<br>",
+                        $validator->messages ()->all ())
                 )
             );
         }
 
-        $user = Sentinel::findByCredentials(["login" => $filds['email']]);
+        $user = Sentinel::findByCredentials (["login" => $filds['email']]);
 
         if ($user) {
             $newPassword = str_random (7);
-            Sentinel::update($user, array('password' => $newPassword));
+            Sentinel::update ($user, array ('password' => $newPassword));
 
             $mail = new MailT("napominanie-parolja",
                 [
@@ -219,8 +245,8 @@ class RegistrationController extends Controller
             );
         } else {
 
-            return Response::json(
-                array(
+            return Response::json (
+                array (
                     'status' => 'error',
                     "errors_messages" => "Пользователь не найден"
                 )
@@ -231,36 +257,39 @@ class RegistrationController extends Controller
     /**
      * activation user
      *
-     * @param $id  id user
+     * @param $id    id user
      * @param $token token code for activation
      *
      * @return mixed
      */
 
-    public function doActivatingUser($id, $token)
+    public function doActivatingUser ($id, $token)
     {
-        $user = Sentinel::findById($id);
+        $user = Sentinel::findById ($id);
 
-        if ($activation = Activation::completed($user)) {
+        if ($activation = Activation::completed ($user)) {
             $result = "Пользователь уже активирован ";
             $status = "activation_completed";
-            Sentinel::login($user);
+            Sentinel::login ($user);
 
-            return View::make ('registration::activating_user', compact("result", "status"));
+            return View::make ('registration::activating_user',
+                compact ("result", "status"));
         } else {
 
-            if (Activation::complete($user, $token)) {
+            if (Activation::complete ($user, $token)) {
 
                 $result = "Пользователь активирован";
                 $status = "success";
-                Sentinel::login($user);
+                Sentinel::login ($user);
 
-                return View::make('registration::activating_user', compact("result", "status"));
+                return View::make ('registration::activating_user',
+                    compact ("result", "status"));
             } else {
                 $result = "Ошибка. Пользователя код активации не подходит";
                 $status = "error";
 
-                return View::make('registration::activating_user', compact("result", "status"));
+                return View::make ('registration::activating_user',
+                    compact ("result", "status"));
             }
         }
 
