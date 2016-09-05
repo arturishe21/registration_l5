@@ -154,7 +154,7 @@ class RegistrationController extends Controller
                     }
                 }
             }
-            
+
             $user = Sentinel::register (
                 $fields
             );
@@ -170,6 +170,11 @@ class RegistrationController extends Controller
                         ["id" => $user->id, "token" => $activation->getCode ()])
                 ]);
             $mail->to = $filds['email'];
+
+            if (Config::get ('registration.registration.no_write_bd') == true) {
+                $mail->no_write_bd = true;
+            }
+
             $mail->send ();
 
             return Response::json (
@@ -228,13 +233,18 @@ class RegistrationController extends Controller
             $newPassword = str_random (7);
             Sentinel::update ($user, array ('password' => $newPassword));
 
-            $mail = new MailT("napominanie-parolja",
+            $mail = new MailT(Config::get ('registration.forgot_pass.template_mail'),
                 [
                     "name_user" => $user->first_name,
                     "new_password" => $newPassword
                 ]);
 
             $mail->to = $filds['email'];
+
+            if (Config::get ('registration.forgot_pass.no_write_bd') == true) {
+                $mail->no_write_bd = true;
+            }
+
             $mail->send ();
 
             return Response::json (
