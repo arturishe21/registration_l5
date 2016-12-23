@@ -54,7 +54,7 @@ class VKController extends Controller
             $data = json_decode($result, true);
 
             if (isset($data['access_token'])) {
-                $str = "https://api.vkontakte.ru/method/getProfiles?uid=" . $data['user_id'] . "&fields=photo_big,email&access_token=" . $data['access_token'];
+                $str = "https://api.vk.com/method/getProfiles?uid=" . $data['user_id'] . "&fields=photo_big,email&access_token=" . $data['access_token'];
                 $resp2 = file_get_contents($str);
                 $el = json_decode($resp2, true);
 
