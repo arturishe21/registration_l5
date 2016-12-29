@@ -17,13 +17,11 @@ use Vis\Builder\User;
 
 class VKController extends Controller
 {
-    public function __construct()
-    {
-        Session::put('url_previous', URL::previous());
-    }
 
     public function doLogin()
     {
+        Session::put('url_previous', URL::previous());
+        
         $destination = "http://api.vk.com/oauth/authorize?client_id=".Config::get('registration.social.vk.api_id')."&scope=friends,photos,offline&display=popup&redirect_uri=".route('auth_vk_res');
         header("Location: $destination");
     }
