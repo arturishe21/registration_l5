@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
-use Cartalyst\Sentinel\Laravel\Facades\Activation;
-
 
 class FBController extends Controller
 {
@@ -48,11 +46,10 @@ class FBController extends Controller
                 . "client_id=" . $app_id . "&redirect_uri=" . urlencode($my_url)
                 . "&client_secret=" . $app_secret . "&code=" . $code."&fields=email,first_name,last_name,id,gender";
 
-            $response = file_get_contents($token_url);
-            $params = null;
-            parse_str($response, $params);
-            $graph_url = "https://graph.facebook.com/me?access_token=". $params['access_token']."&fields=email,first_name,last_name,id,gender";
-            $user = json_decode(file_get_contents($graph_url));
+            $params = json_decode($this->cURLget($token_url));
+
+            $graph_url = "https://graph.facebook.com/me?access_token=". $params->access_token."&fields=email,first_name,last_name,id,gender";
+            $user = json_decode($this->cURLget($graph_url));
 
             $firstName = $user->first_name;
             $lastName = $user->last_name;
@@ -106,6 +103,17 @@ class FBController extends Controller
                 return Redirect::to($redirect);
             }
         }
+    }
+
+    private function cURLget ($ch_url) {
+        $ch = curl_init();
+        curl_setopt($ch,CURLOPT_URL,$ch_url);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+        curl_setopt($ch,CURLOPT_USERAGENT,$_SERVER['HTTP_USER_AGENT']);
+        $ch_send = curl_exec($ch);
+        curl_close($ch);
+
+        return $ch_send;
     }
 }
 
