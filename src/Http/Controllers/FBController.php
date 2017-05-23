@@ -65,9 +65,9 @@ class FBController extends Controller
             //check user
             if ($userEmail && $fbId) {
 
-                $user = DB::table("users")->where("id_fb", $fbId)->first();
-                if (!$user['id']) {
-                    $user = DB::table("users")->where("email", "like", $userEmail)->first();
+                $user = (array) DB::table("users")->where("id_fb", $fbId)->first();
+                if (!isset($user['id'])) {
+                    $user = (array) DB::table("users")->where("email", "like", $userEmail)->first();
                 }
 
                 if (!$user['id']) {

@@ -3,12 +3,8 @@
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Validator;
 use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
-use Cartalyst\Sentinel\Laravel\Facades\Activation;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +56,7 @@ class VKController extends Controller
                 $lastName = $el['response'][0]['last_name'];
                 $idUser = $el['response'][0]['uid'];
 
-                $user = DB::table("users")->where("id_vk", $idUser)->first();
+                $user = (array) DB::table("users")->where("id_vk", $idUser)->first();
 
                 if (!isset($user['id'])) {
 
