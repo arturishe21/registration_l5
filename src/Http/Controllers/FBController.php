@@ -70,7 +70,7 @@ class FBController extends Controller
                     $user = (array) DB::table("users")->where("email", "like", $userEmail)->first();
                 }
 
-                if (!$user['id']) {
+                if (!isset($user['id'])) {
                     $randomPassword = str_random(8);
                     $user = Sentinel::registerAndActivate(array(
                         'email'    => $userEmail,
