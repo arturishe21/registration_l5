@@ -88,8 +88,6 @@ class FBController extends Controller
                     $userAuth = Sentinel::findById($user['id']);
                     Sentinel::login($userAuth, Config::get('registration.social.fb.remember'));
                 }
-                $redirect = Session::get('url_previous', "/");
-                Session::forget('url_previous');
 
                 //if not empty redirect_url
                 if (Config::get('registration.social.fb.redirect_url')) {

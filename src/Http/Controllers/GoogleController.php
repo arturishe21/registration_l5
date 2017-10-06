@@ -87,9 +87,7 @@ class GoogleController extends Controller
                         Sentinel::login($userAuth, Config::get('registration.social.google.remember'));
                     }
 
-                    $redirect = Session::get('url_previous', "/");
-                    Session::forget('url_previous');
-
+                  
                     //if not empty redirect_url
                     if (Config::get('registration::social.google.redirect_url')) {
                         $redirect = Config::get('registration::social.google.redirect_url');
