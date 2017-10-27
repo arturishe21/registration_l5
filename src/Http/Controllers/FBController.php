@@ -12,15 +12,13 @@ use Cartalyst\Sentinel\Laravel\Facades\Sentinel;
 
 class FBController extends Controller
 {
-    public function __construct()
-    {
-        Session::put('url_previous', URL::previous());
-    }
 
     public function doLogin()
     {
+        Session::put('url_previous', URL::previous());
         $link = route('auth_fb_res');
-        header("Location: $link");
+
+        return Redirect::to($link);
     }
 
     //auth FB
@@ -38,7 +36,8 @@ class FBController extends Controller
             $dialog_url = "http://www.facebook.com/dialog/oauth?client_id="
                 . $app_id . "&redirect_uri=" . urlencode($my_url) . "&scope=public_profile,email&state="
                 .  Session::get('state')."&fields=email,first_name,last_name,id,gender";
-            header("Location: $dialog_url");
+
+            return Redirect::to($dialog_url);
         }
 
         if ($state == Session::get('state')) {

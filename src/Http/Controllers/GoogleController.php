@@ -14,13 +14,11 @@ use Cartalyst\Sentinel\Laravel\Facades\Activation;
 
 class GoogleController extends Controller
 {
-    public function __construct()
-    {
-        Session::put('url_previous', URL::previous());
-    }
 
     public function google()
     {
+        Session::put('url_previous', URL::previous());
+
         $url = 'https://accounts.google.com/o/oauth2/auth';
 
         $params = array(
@@ -30,7 +28,7 @@ class GoogleController extends Controller
             'scope'         => 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
         );
 
-        header("Location: " . $url . "?" . urldecode(http_build_query($params)));
+        return Redirect::to($url . "?" . urldecode(http_build_query($params)));
     }
 
     //auth google
