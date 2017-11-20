@@ -64,7 +64,7 @@ class GoogleController extends Controller
 
                 if ($userInfo["id"]) {
                     $email = trim($userInfo['email']);
-                    $user = DB::table("users")->where("email", "like", $email)->first();
+                    $user = (array) DB::table("users")->where("email", "like", $email)->first();
 
                     if (!$user['id']) {
 
