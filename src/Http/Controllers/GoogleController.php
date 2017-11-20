@@ -66,7 +66,7 @@ class GoogleController extends Controller
                     $email = trim($userInfo['email']);
                     $user = (array) DB::table("users")->where("email", "like", $email)->first();
 
-                    if (!$user['id']) {
+                    if (!isset($user['id'])) {
 
                         $randomPassword = str_random(8);
 
