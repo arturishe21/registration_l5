@@ -66,7 +66,7 @@ class GoogleController extends Controller
                     $email = trim($userInfo['email']);
                     $user = DB::table("users")->where("email", "like", $email)->first();
 
-                    if (!$user['id']) {
+                    if (!$user) {
 
                         $randomPassword = str_random(8);
 
@@ -81,11 +81,11 @@ class GoogleController extends Controller
                         Sentinel::login($userAuth, Config::get('registration.social.google.remember'));
 
                     } else {
-                        $userAuth = Sentinel::findById($user['id']);
+                        $userAuth = Sentinel::findById($user->id);
                         Sentinel::login($userAuth, Config::get('registration.social.google.remember'));
                     }
 
-                  
+
                     //if not empty redirect_url
                     if (Config::get('registration::social.google.redirect_url')) {
                         $redirect = Config::get('registration::social.google.redirect_url');
