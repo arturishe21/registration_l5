@@ -80,6 +80,10 @@ class GoogleController extends Controller
                         $userAuth = Sentinel::findById($user->id);
                         Sentinel::login($userAuth, Config::get('registration.social.google.remember'));
 
+                        if (is_callable(Config::get('registration.social.google.action_after_registration'))) {
+                            Config::get('registration.social.google.action_after_registration')($userAuth);
+                        }
+
                     } else {
                         $userAuth = Sentinel::findById($user->id);
                         Sentinel::login($userAuth, Config::get('registration.social.google.remember'));

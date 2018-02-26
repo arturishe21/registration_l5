@@ -83,6 +83,11 @@ class FBController extends Controller
                     $userAuth = Sentinel::findById($user->id);
                     Sentinel::login($userAuth, Config::get('registration.social.fb.remember'));
 
+                    if (is_callable(Config::get('registration.social.fb.action_after_registration'))) {
+                        Config::get('registration.social.fb.action_after_registration')($userAuth);
+                    }
+
+
                 } else {
                     $userAuth = Sentinel::findById($user['id']);
                     Sentinel::login($userAuth, Config::get('registration.social.fb.remember'));
