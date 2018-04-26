@@ -91,8 +91,8 @@ class GoogleController extends Controller
 
 
                     //if not empty redirect_url
-                    if (Config::get('registration::social.google.redirect_url')) {
-                        $redirect = Config::get('registration::social.google.redirect_url');
+                    if (Config::get('registration.social.google.redirect_url')) {
+                        $redirect = Config::get('registration.social.google.redirect_url');
                         Session::flash('id_user', $userAuth->id);
                     } else {
                         $redirect = Session::get('url_previous', "/");
